@@ -1,0 +1,99 @@
+-- This runs a Python script to extract historical stock ticker data from Yahoo Finance
+-- Requires a stock symbol, a start date, and an end date.
+EXECUTE sp_execute_external_script @language = N'Python'
+    , @script = N'
+import pandas_datareader.data as web
+import datetime
+start = datetime.datetime(2021, 1, 11)
+end = datetime.datetime(2021, 1, 15)
+f = web.get_data_yahoo("nvda", start, end)
+f.ix
+print(f)'
+
+http://www.hedaro.com/blog/yahoo-data-using-pandas.html
+# Select some dates to play with
+start = pd.to_datetime('2020-02-01')
+end = pd.to_datetime('2020-04-01')
+
+# Pick your favorite stock!
+df = pdr.get_data_yahoo('WMT', start, end)
+df
+
+https://www.mssqltips.com/sqlservertip/5038/import-historical-stock-prices-into-sql-server-using-python/
+import pandas_datareader.data as web
+import datetime
+start = datetime.datetime(2017, 1, 1)
+end = datetime.datetime(2017, 8, 31)
+f = web.DataReader("nvda", 'google', start, end)
+f.ix
+print(f)
+
+-- 00:00:02 run time for 1 ticker with 5 day period and 3 days of data
+-- 00:00:03 run time for 2 tickers with 5 day period and 3 days of data
+-- 00:00:07 run time for 4 tickers with 5 day period and 3 days of data
+-- 00:00:12 run time for 8 tickers with 5 day period and 3 days of data
+-- >00:03:00 and canceled run for 16 tickers with 5 day period and 3 days of data
+-- 00:00:02 run time for 1 ticker with 10 day period and 8 days of data
+-- 00:00:03 run time for 2 ticker with 10 day period and 8 days of data
+-- 00:00:11 run time for 8 tickers with 10 day period and 8 days of data
+-- >00:03:00 and canceled run for 16 tickers with 10 day period and 8 days of data
+-- 00:00:02 run time for 1 ticker with 98 day period
+-- 00:00:13 run time for 8 tickers with 98 day period
+-- 00:00:14 run time for 8 tickers with 2 year period
+-- 00:00:14 run time for 8 tickers with 4 year period
+-- 00:00:17 run time for 8 tickers with 10 year period (20,000 rows)
+-- 00:00:20 run time for 9 tickers with 10 year period (22,500 rows)
+-- >00:03:00 and canceled run for 10 tickers with 10 year period
+
+
+EXECUTE sp_execute_external_script @language = N'Python'
+    , @script = N'
+#settings to dynamically display all rows and columns
+#in a single tabular display of the dataframe
+import pandas as pd
+pd.set_option("display.max_rows", None)
+pd.set_option("expand_frame_repr", False)
+
+#settings for importing built-in datetime and date libraries
+#and external pandas_datareader libraries
+import time
+import datetime
+from datetime import date
+import pandas_datareader.data as web
+
+#read symbols from file to python list
+#optionally, read from short_stock_symbol_list.txt for testing
+symbol = []
+with open("C:\SQL_and_Python\short_stock_symbol_list.txt") as f:  
+    for line in f:
+        symbol.append(line.strip())
+f.close
+
+#setting for start and end dates
+#you can designate a specific date
+#such as 2007, 1, 1
+#or a relative date such as today less 5 days
+
+start = datetime.date(2011, 2, 18)
+#start = date(date.today().year, date.today().month, date.today().day-5)
+
+end = datetime.date.today()
+
+#iterate over ticker symbol values
+#with while for retrieving historical and
+#displaying stock prices
+#try code and catch any exception
+#try again (continue) after catch
+i=0
+while i<len(symbol):
+    try:
+        f = web.get_data_yahoo(symbol[i], start, end)
+        f.insert(0,"Symbol",symbol[i])
+        f = f.drop(["Adj Close"], axis=1)
+        print (f)
+    except :
+        print("No information for ticker:" )
+        print (symbol[i])
+        continue
+    i=i+1
+'
